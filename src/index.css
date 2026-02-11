@@ -1,0 +1,35 @@
+/* Reset base para ocupar ecrã inteiro */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove o flex que centrava o conteúdo */
+body {
+  display: block;
+  overflow-x: hidden;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Garante que o root ocupa tudo */
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Remove estilos padrão que interferiam */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
