@@ -1,148 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { Moon, Sun, TrendingUp, Download, Plus, Calendar, LogOut, User, Mail, Lock } from 'lucide-react';
-import { supabase } from './supabase';
-
-
-// Supabase (lê do .env do Vite)
-
+import { Moon, Sun, TrendingUp, Download, Plus, Calendar } from 'lucide-react';
 
 export default function SleepTracker() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [sleepRecords, setSleepRecords] = useState([]);
   const [bedTime, setBedTime] = useState('');
   const [wakeTime, setWakeTime] = useState('');
   const [showStats, setShowStats] = useState(false);
-  
-  // Login form
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSignup, setIsSignup] = useState(false);
-  const [authError, setAuthError] = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
 
-  // Check auth state on mount
+  // Load data from localStorage on mount
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    try {
+      const saved = localStorage.getItem('sleepRecords');
+      console.log('Loading from localStorage:', saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setSleepRecords(parsed);
+        console.log('Loaded records:', parsed);
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+      alert('Erro ao carregar dados guardados. A começar com lista vazia.');
+    }
   }, []);
 
-  // Load sleep records from Supabase when user logs in
+  // Save to localStorage whenever records change
   useEffect(() => {
-    if (!user) {
-      setSleepRecords([]);
-      return;
-    }
-
-    loadRecords();
-
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('sleep_records_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'sleep_records',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          loadRecords();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-  const loadRecords = async () => {
-    if (!user) return;
-    
-    const { data, error } = await supabase
-      .from('Sleep_Users')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error loading records:', error);
-      alert('Erro ao carregar registos: ' + error.message);
-    } else {
-      setSleepRecords(data || []);
-      console.log('Loaded records:', data);
-    }
-  };
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setAuthError('');
-    setAuthLoading(true);
-
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      alert('✓ Conta criada! Verifica o teu email para confirmar a conta.');
-      setEmail('');
-      setPassword('');
-      setIsSignup(false);
-    } catch (error) {
-      console.error('Signup error:', error);
-      setAuthError(error.message || 'Erro ao criar conta');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setAuthError('');
-    setAuthLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      setEmail('');
-      setPassword('');
-    } catch (error) {
-      console.error('Login error:', error);
-      if (error.message.includes('Invalid login credentials')) {
-        setAuthError('Email ou password incorretos');
-      } else if (error.message.includes('Email not confirmed')) {
-        setAuthError('Por favor confirma o teu email antes de fazer login');
-      } else {
-        setAuthError(error.message || 'Erro ao fazer login');
+      if (sleepRecords.length > 0) {
+        localStorage.setItem('sleepRecords', JSON.stringify(sleepRecords));
+        console.log('Saved to localStorage:', sleepRecords);
       }
-    } finally {
-      setAuthLoading(false);
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+      alert('Aviso: Não foi possível guardar os dados localmente.');
     }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setSleepRecords([]);
-  };
+  }, [sleepRecords]);
 
   const calculateSleepHours = (bedTime, wakeTime) => {
     const [bedHour, bedMin] = bedTime.split(':').map(Number);
@@ -151,6 +44,7 @@ export default function SleepTracker() {
     let bedTimeMinutes = bedHour * 60 + bedMin;
     let wakeTimeMinutes = wakeHour * 60 + wakeMin;
     
+    // If wake time is earlier in the day, it means we slept past midnight
     if (wakeTimeMinutes < bedTimeMinutes) {
       wakeTimeMinutes += 24 * 60;
     }
@@ -159,7 +53,7 @@ export default function SleepTracker() {
     return (totalMinutes / 60).toFixed(1);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Form submitted!', { bedTime, wakeTime });
     
@@ -169,29 +63,26 @@ export default function SleepTracker() {
     }
 
     try {
-
       const hours = calculateSleepHours(bedTime, wakeTime);
-      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-
-      const { data, error } = await supabase
-        .from('Sleep_Users')
-        .insert([
-          {
-            user_id: user.id,
-            date: today,
-            bed_time: bedTime,
-            wake_time: wakeTime,
-            hours: parseFloat(hours),
-          },
-        ])
-        .select();
-
-
-      if (error) throw error;
-
-      console.log('Record added:', data);
+      console.log('Calculated hours:', hours);
+      
+      const newRecord = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('pt-PT'),
+        bedTime,
+        wakeTime,
+        hours: parseFloat(hours)
+      };
+      
+      console.log('New record:', newRecord);
+      
+      const updatedRecords = [newRecord, ...sleepRecords];
+      setSleepRecords(updatedRecords);
+      console.log('Records updated:', updatedRecords);
+      
       setBedTime('');
       setWakeTime('');
+      
       alert(`✓ Registo adicionado: ${hours}h de sono!`);
     } catch (error) {
       console.error('Error adding record:', error);
@@ -199,40 +90,31 @@ export default function SleepTracker() {
     }
   };
 
-  const deleteRecord = async (id) => {
-    if (!confirm('Tens a certeza que queres eliminar este registo?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('sleep_records')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting record:', error);
-      alert('Erro ao eliminar registo: ' + error.message);
-    }
+  const deleteRecord = (id) => {
+    setSleepRecords(sleepRecords.filter(r => r.id !== id));
   };
 
   const exportData = () => {
+    // Create CSV header
     const header = ['Data', 'Dia da Semana', 'Hora de Deitar', 'Hora de Acordar', 'Horas Dormidas', 'Qualidade'];
     
+    // Create CSV rows with formatted data
     const rows = sleepRecords.map(r => {
       const date = new Date(r.date.split('/').reverse().join('-'));
       const dayOfWeek = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][date.getDay()];
-      const quality = r.hours >= 7 ? 'Boa' : r.hours >= 6 ? 'Média' : 'Fraca';
+      const quality = r.hours >= 7.5 ? 'Boa' : r.hours >= 6.5 ? 'Média' : 'Fraca';
       
       return [
         r.date,
         dayOfWeek,
-        r.bed_time,
-        r.wake_time,
+        r.bedTime,
+        r.wakeTime,
         `${r.hours}h`,
         quality
       ];
     });
     
+    // Add summary statistics at the end
     const summaryRows = [
       [],
       ['ESTATÍSTICAS'],
@@ -242,9 +124,11 @@ export default function SleepTracker() {
       ['Total de Registos', '', '', '', stats.total]
     ];
     
+    // Combine everything
     const allRows = [header, ...rows, ...summaryRows];
     const csv = allRows.map(row => row.join(';')).join('\n');
     
+    // Add BOM for Excel to recognize UTF-8 encoding
     const BOM = '\uFEFF';
     const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -275,244 +159,6 @@ export default function SleepTracker() {
     hours: r.hours
   }));
 
-  // Loading state
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: '"Space Mono", monospace',
-        color: '#93c5fd'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <Moon size={48} className="icon-float" style={{ margin: '0 auto 1rem' }} />
-          <p style={{ fontSize: '1.2rem' }}>A carregar...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Login screen
-  if (!user) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-        fontFamily: '"Space Mono", "Courier New", monospace',
-        color: '#e0e0e0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem'
-      }}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Playfair+Display:wght@600;900&display=swap');
-          
-          @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-          }
-          
-          .icon-float {
-            animation: float 3s ease-in-out infinite;
-          }
-
-          input {
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(147, 197, 253, 0.2);
-            border-radius: 12px;
-            color: #e0e0e0;
-            padding: 1rem;
-            font-family: 'Space Mono', monospace;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            width: 100%;
-          }
-          
-          input:focus {
-            outline: none;
-            border-color: #93c5fd;
-            background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 0 20px rgba(147, 197, 253, 0.2);
-          }
-
-          button {
-            cursor: pointer;
-            transition: all 0.3s ease;
-          }
-          
-          button:hover {
-            transform: translateY(-2px);
-          }
-          
-          button:active {
-            transform: translateY(0);
-          }
-
-          button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-          }
-        `}</style>
-
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '24px',
-          padding: '3rem',
-          maxWidth: '450px',
-          width: '100%'
-        }}>
-          <div className="icon-float" style={{ 
-            display: 'inline-block', 
-            marginBottom: '1rem',
-            width: '100%',
-            textAlign: 'center'
-          }}>
-            <Moon size={56} color="#93c5fd" strokeWidth={1.5} />
-          </div>
-          
-          <h1 style={{
-            fontFamily: '"Playfair Display", serif',
-            fontSize: '2.5rem',
-            fontWeight: 900,
-            margin: '0.5rem 0',
-            background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textAlign: 'center',
-            letterSpacing: '-0.02em'
-          }}>
-            Sleep Tracker
-          </h1>
-          
-          <p style={{ 
-            color: '#9ca3af', 
-            fontSize: '0.95rem',
-            marginTop: '0.5rem',
-            marginBottom: '2rem',
-            textAlign: 'center',
-            letterSpacing: '0.05em'
-          }}>
-            {isSignup ? 'Cria a tua conta' : 'Entra na tua conta'}
-          </p>
-
-          <form onSubmit={isSignup ? handleSignup : handleLogin}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                marginBottom: '0.75rem',
-                color: '#93c5fd',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase'
-              }}>
-                <Mail size={16} />
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="o-teu-email@exemplo.com"
-                required
-              />
-            </div>
-
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                marginBottom: '0.75rem',
-                color: '#93c5fd',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase'
-              }}>
-                <Lock size={16} />
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-              />
-            </div>
-
-            {authError && (
-              <div style={{
-                background: 'rgba(248, 113, 113, 0.1)',
-                border: '1px solid rgba(248, 113, 113, 0.3)',
-                borderRadius: '8px',
-                padding: '0.75rem',
-                marginBottom: '1.5rem',
-                color: '#f87171',
-                fontSize: '0.9rem'
-              }}>
-                {authError}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={authLoading}
-              style={{
-                background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
-                border: 'none',
-                borderRadius: '12px',
-                color: 'white',
-                padding: '1rem',
-                fontSize: '1rem',
-                fontWeight: 700,
-                fontFamily: 'Space Mono, monospace',
-                width: '100%',
-                boxShadow: '0 4px 20px rgba(96, 165, 250, 0.3)',
-                marginBottom: '1rem'
-              }}
-            >
-              {authLoading ? 'A processar...' : (isSignup ? 'Criar Conta' : 'Entrar')}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignup(!isSignup);
-                setAuthError('');
-              }}
-              style={{
-                background: 'transparent',
-                border: '2px solid rgba(147, 197, 253, 0.3)',
-                borderRadius: '12px',
-                color: '#93c5fd',
-                padding: '0.75rem',
-                fontSize: '0.9rem',
-                fontWeight: 700,
-                fontFamily: 'Space Mono, monospace',
-                width: '100%'
-              }}
-            >
-              {isSignup ? 'Já tens conta? Entra aqui' : 'Não tens conta? Cria uma'}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  // Main app (when logged in)
   return (
     <div style={{
       minHeight: '100vh',
@@ -531,6 +177,11 @@ export default function SleepTracker() {
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
         }
         
         @keyframes float {
@@ -628,79 +279,38 @@ export default function SleepTracker() {
       `}</style>
 
       <div style={{ width: '100%' }}>
-        {/* Header with user info */}
+        {/* Header */}
         <div className="animate-in" style={{ 
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: '2rem',
+          textAlign: 'center', 
+          marginBottom: '3rem',
           animation: 'fadeIn 0.6s ease-out'
         }}>
-          <div style={{ textAlign: 'left' }}>
-            <div className="icon-float" style={{ 
-              display: 'inline-block', 
-              marginBottom: '1rem' 
-            }}>
-              <Moon size={56} color="#93c5fd" strokeWidth={1.5} />
-            </div>
-            <h1 style={{
-              fontFamily: '"Playfair Display", serif',
-              fontSize: '3.5rem',
-              fontWeight: 900,
-              margin: '0.5rem 0',
-              background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '-0.02em'
-            }}>
-              Sleep Tracker
-            </h1>
-            <p style={{ 
-              color: '#9ca3af', 
-              fontSize: '1.1rem',
-              marginTop: '0.5rem',
-              letterSpacing: '0.05em'
-            }}>
-              Regista o teu sono e acompanha os teus padrões
-            </p>
-          </div>
-
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            padding: '1rem 1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
+          <div className="icon-float" style={{ 
+            display: 'inline-block', 
+            marginBottom: '1rem' 
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <User size={20} color="#93c5fd" />
-              <span style={{ color: '#93c5fd', fontSize: '0.95rem' }}>
-                {user.email}
-              </span>
-            </div>
-            <button
-              onClick={handleLogout}
-              style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '8px',
-                color: '#f87171',
-                padding: '0.5rem 1rem',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                fontFamily: 'Space Mono, monospace',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              <LogOut size={16} />
-              Sair
-            </button>
+            <Moon size={56} color="#93c5fd" strokeWidth={1.5} />
           </div>
+          <h1 style={{
+            fontFamily: '"Playfair Display", serif',
+            fontSize: '3.5rem',
+            fontWeight: 900,
+            margin: '0.5rem 0',
+            background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '-0.02em'
+          }}>
+            Sleep Tracker
+          </h1>
+          <p style={{ 
+            color: '#9ca3af', 
+            fontSize: '1.1rem',
+            marginTop: '0.5rem',
+            letterSpacing: '0.05em'
+          }}>
+            Regista o teu sono e acompanha os teus padrões
+          </p>
         </div>
 
         {/* Input Form */}
@@ -998,11 +608,11 @@ export default function SleepTracker() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
                       <Moon size={16} color="#9ca3af" />
-                      {record.bed_time}
+                      {record.bedTime}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
                       <Sun size={16} color="#fbbf24" />
-                      {record.wake_time}
+                      {record.wakeTime}
                     </div>
                     <div style={{ 
                       fontWeight: 700,
@@ -1017,11 +627,11 @@ export default function SleepTracker() {
                         borderRadius: '6px',
                         fontSize: '0.8rem',
                         fontWeight: 700,
-                        background: record.hours >= 7 ? 'rgba(74, 222, 128, 0.15)' : record.hours >= 6 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(248, 113, 113, 0.15)',
-                        color: record.hours >= 7 ? '#4ade80' : record.hours >= 6 ? '#fbbf24' : '#f87171',
-                        border: `1px solid ${record.hours >= 7 ? 'rgba(74, 222, 128, 0.3)' : record.hours >= 6 ? 'rgba(251, 191, 36, 0.3)' : 'rgba(248, 113, 113, 0.3)'}`
+                        background: record.hours >= 7.5 ? 'rgba(74, 222, 128, 0.15)' : record.hours >= 6.5 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(248, 113, 113, 0.15)',
+                        color: record.hours >= 7.5 ? '#4ade80' : record.hours >= 6.5 ? '#fbbf24' : '#f87171',
+                        border: `1px solid ${record.hours >= 7.5 ? 'rgba(74, 222, 128, 0.3)' : record.hours >= 6.5 ? 'rgba(251, 191, 36, 0.3)' : 'rgba(248, 113, 113, 0.3)'}`
                       }}>
-                        {record.hours >= 7 ? '✓ Boa' : record.hours >= 6 ? '~ Média' : '✗ Fraca'}
+                        {record.hours >= 7.5 ? '✓ Boa' : record.hours >= 6.5 ? '~ Média' : '✗ Fraca'}
                       </span>
                     </div>
                     <div style={{ textAlign: 'right' }}>
