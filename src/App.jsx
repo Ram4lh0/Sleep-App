@@ -1,3 +1,9 @@
+//Para dar update: npm run dev
+//Para meter no Github: git add . ;
+//                      git commit -m "mensagem" ;  
+//                      git push
+
+
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Moon, Sun, TrendingUp, Download, Plus, Calendar, LogOut, User, Mail, Lock } from 'lucide-react';
@@ -53,7 +59,7 @@ export default function SleepTracker() {
         {
           event: '*',
           schema: 'public',
-          table: 'sleep_records',
+          table: 'Sleep_Users',
           filter: `user_id=eq.${user.id}`
         },
         () => {
@@ -204,7 +210,7 @@ export default function SleepTracker() {
 
     try {
       const { error } = await supabase
-        .from('sleep_records')
+        .from('Sleep_Users')
         .delete()
         .eq('id', id);
 
