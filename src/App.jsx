@@ -11,13 +11,11 @@ import { supabase } from './supabase';
 // ---------- helpers de data (YYYY-MM-DD) ----------
 const pad2 = (n) => String(n).padStart(2, '0');
 
-// devolve YYYY-MM-DD (hora local, não UTC)
 const todayLocalISO = () => {
   const d = new Date();
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 };
 
-// "2026-02-11" -> "11/02/2026"
 const formatPT = (iso) => {
   if (!iso || typeof iso !== 'string') return '';
   const [y, m, d] = iso.split('-');
@@ -25,28 +23,24 @@ const formatPT = (iso) => {
   return `${d}/${m}/${y}`;
 };
 
-// "2026-02-11" -> Date (local, sem timezone bugs)
 const isoToDateLocal = (iso) => {
   if (!iso || typeof iso !== 'string') return new Date(NaN);
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(y, (m || 1) - 1, d || 1);
 };
 
-// "2026-02-11" -> "Qua"
 const dayShortPT = (iso) => {
   const dt = isoToDateLocal(iso);
   if (isNaN(dt.getTime())) return '';
   return ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][dt.getDay()];
 };
 
-// "2026-02-11" -> "Quarta"
 const dayLongPT = (iso) => {
   const dt = isoToDateLocal(iso);
   if (isNaN(dt.getTime())) return '';
   return ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][dt.getDay()];
 };
 
-// "2026-02-11" -> "11/02"
 const formatDDMM = (iso) => {
   if (!iso || typeof iso !== 'string') return '';
   const [y, m, d] = iso.split('-');
@@ -92,7 +86,6 @@ export default function SleepTracker() {
 
     loadRecords();
 
-    // Subscribe to real-time updates (bónus)
     const channel = supabase
       .channel(`sleep_users_changes_${user.id}`)
       .on(
@@ -103,15 +96,11 @@ export default function SleepTracker() {
           table: 'Sleep_Users',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          loadRecords();
-        }
+        () => loadRecords()
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }, [user]);
 
   const loadRecords = async () => {
@@ -128,7 +117,6 @@ export default function SleepTracker() {
       alert('Erro ao carregar registos: ' + error.message);
     } else {
       setSleepRecords(data || []);
-      console.log('Loaded records:', data);
     }
   };
 
@@ -190,9 +178,7 @@ export default function SleepTracker() {
     let bedTimeMinutes = bedHour * 60 + bedMin;
     let wakeTimeMinutes = wakeHour * 60 + wakeMin;
 
-    if (wakeTimeMinutes < bedTimeMinutes) {
-      wakeTimeMinutes += 24 * 60;
-    }
+    if (wakeTimeMinutes < bedTimeMinutes) wakeTimeMinutes += 24 * 60;
 
     const totalMinutes = wakeTimeMinutes - bedTimeMinutes;
     return (totalMinutes / 60).toFixed(1);
@@ -200,7 +186,6 @@ export default function SleepTracker() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted!', { bedTime, wakeTime });
 
     if (!bedTime || !wakeTime) {
       alert('Por favor preenche ambas as horas!');
@@ -209,7 +194,7 @@ export default function SleepTracker() {
 
     try {
       const hours = calculateSleepHours(bedTime, wakeTime);
-      const today = todayLocalISO(); // YYYY-MM-DD (local)
+      const today = todayLocalISO();
 
       const { data, error } = await supabase
         .from('Sleep_Users')
@@ -227,10 +212,8 @@ export default function SleepTracker() {
 
       if (error) throw error;
 
-      // ✅ Atualiza UI imediatamente (sem depender do realtime)
       if (data) setSleepRecords(prev => [data, ...prev]);
 
-      console.log('Record added:', data);
       setBedTime('');
       setWakeTime('');
       alert(`✓ Registo adicionado: ${hours}h de sono!`);
@@ -244,34 +227,40 @@ export default function SleepTracker() {
     if (!confirm('Tens a certeza que queres eliminar este registo?')) return;
 
     try {
-      // ✅ otimista: tira logo da UI
       setSleepRecords(prev => prev.filter(r => r.id !== id));
 
-      const { error } = await supabase
-        .from('Sleep_Users')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('Sleep_Users').delete().eq('id', id);
       if (error) throw error;
     } catch (error) {
       console.error('Error deleting record:', error);
       alert('Erro ao eliminar registo: ' + (error.message || 'Erro desconhecido'));
-      // fallback: recarrega
       loadRecords();
     }
+  };
+
+  const stats = {
+    avg: sleepRecords.length > 0
+      ? (sleepRecords.reduce((sum, r) => sum + r.hours, 0) / sleepRecords.length).toFixed(1)
+      : 0,
+    best: sleepRecords.length > 0
+      ? Math.max(...sleepRecords.map(r => r.hours)).toFixed(1)
+      : 0,
+    worst: sleepRecords.length > 0
+      ? Math.min(...sleepRecords.map(r => r.hours)).toFixed(1)
+      : 0,
+    total: sleepRecords.length
   };
 
   const exportData = () => {
     const header = ['Data', 'Dia da Semana', 'Hora de Deitar', 'Hora de Acordar', 'Horas Dormidas', 'Qualidade'];
 
     const rows = sleepRecords.map(r => {
-      const iso = r.date; // YYYY-MM-DD
-      const dayOfWeek = dayLongPT(iso);
+      const iso = r.date;
       const quality = r.hours >= 7 ? 'Boa' : r.hours >= 6 ? 'Média' : 'Fraca';
 
       return [
         formatPT(iso),
-        dayOfWeek,
+        dayLongPT(iso),
         r.bed_time,
         r.wake_time,
         `${r.hours}h`,
@@ -301,19 +290,6 @@ export default function SleepTracker() {
     URL.revokeObjectURL(url);
 
     alert(`✓ Ficheiro exportado com ${sleepRecords.length} registos!`);
-  };
-
-  const stats = {
-    avg: sleepRecords.length > 0
-      ? (sleepRecords.reduce((sum, r) => sum + r.hours, 0) / sleepRecords.length).toFixed(1)
-      : 0,
-    best: sleepRecords.length > 0
-      ? Math.max(...sleepRecords.map(r => r.hours)).toFixed(1)
-      : 0,
-    worst: sleepRecords.length > 0
-      ? Math.min(...sleepRecords.map(r => r.hours)).toFixed(1)
-      : 0,
-    total: sleepRecords.length
   };
 
   const chartData = sleepRecords
@@ -384,9 +360,15 @@ export default function SleepTracker() {
           button:hover { transform: translateY(-2px); }
           button:active { transform: translateY(0); }
           button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+          /* ✅ mobile polish */
+          @media (max-width: 520px) {
+            .authCard { padding: 1.5rem !important; border-radius: 18px !important; }
+            .authTitle { font-size: 2.1rem !important; }
+          }
         `}</style>
 
-        <div style={{
+        <div className="authCard" style={{
           background: 'rgba(255, 255, 255, 0.03)',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -399,7 +381,7 @@ export default function SleepTracker() {
             <Moon size={56} color="#93c5fd" strokeWidth={1.5} />
           </div>
 
-          <h1 style={{
+          <h1 className="authTitle" style={{
             fontFamily: '"Playfair Display", serif',
             fontSize: '2.5rem',
             fontWeight: 900,
@@ -440,13 +422,7 @@ export default function SleepTracker() {
                 <Mail size={16} />
                 Email
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="o-teu-email@exemplo.com"
-                required
-              />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="o-teu-email@exemplo.com" required />
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
@@ -464,14 +440,7 @@ export default function SleepTracker() {
                 <Lock size={16} />
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-              />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
             </div>
 
             {authError && (
@@ -533,7 +502,7 @@ export default function SleepTracker() {
 
   // Main app (when logged in)
   return (
-    <div style={{
+    <div className="page" style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
       fontFamily: '"Space Mono", "Courier New", monospace',
@@ -543,9 +512,12 @@ export default function SleepTracker() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Playfair+Display:wght@600;900&display=swap');
         * { box-sizing: border-box; }
+
         @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         .animate-in { animation: fadeIn 0.6s ease-out; }
+        .icon-float { animation: float 3s ease-in-out infinite; }
+
         .card {
           background: rgba(255, 255, 255, 0.03);
           backdrop-filter: blur(10px);
@@ -555,6 +527,7 @@ export default function SleepTracker() {
           transition: all 0.3s ease;
         }
         .card:hover { background: rgba(255,255,255,0.05); border-color: rgba(147,197,253,0.3); transform: translateY(-2px); }
+
         input[type="time"] {
           background: rgba(255, 255, 255, 0.08);
           border: 2px solid rgba(147, 197, 253, 0.2);
@@ -568,9 +541,11 @@ export default function SleepTracker() {
         }
         input[type="time"]:focus { outline: none; border-color: #93c5fd; background: rgba(255,255,255,0.12); box-shadow: 0 0 20px rgba(147,197,253,0.2); }
         input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
         button { cursor: pointer; transition: all 0.3s ease; }
         button:hover { transform: translateY(-2px); }
         button:active { transform: translateY(0); }
+
         .record-item {
           background: rgba(255, 255, 255, 0.04);
           border: 1px solid rgba(255, 255, 255, 0.08);
@@ -579,6 +554,7 @@ export default function SleepTracker() {
           transition: all 0.3s ease;
         }
         .record-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(147,197,253,0.2); transform: translateX(4px); }
+
         .stat-card {
           background: linear-gradient(135deg, rgba(147, 197, 253, 0.1) 0%, rgba(96, 165, 250, 0.05) 100%);
           border: 1px solid rgba(147, 197, 253, 0.2);
@@ -588,23 +564,85 @@ export default function SleepTracker() {
           transition: all 0.3s ease;
         }
         .stat-card:hover { background: linear-gradient(135deg, rgba(147,197,253,0.15) 0%, rgba(96,165,250,0.08) 100%); transform: scale(1.05); }
-        .icon-float { animation: float 3s ease-in-out infinite; }
+
+        /* =========================
+           ✅ RESPONSIVE (mobile)
+           ========================= */
+
+        /* container padding */
+        @media (max-width: 900px) {
+          .page { padding: 1.25rem 1.25rem !important; }
+        }
+        @media (max-width: 520px) {
+          .page { padding: 1rem 0.9rem !important; }
+          .card { padding: 1.25rem !important; }
+        }
+
+        /* header: stack no mobile */
+        @media (max-width: 820px) {
+          .headerRow { flex-direction: column !important; gap: 1rem !important; align-items: flex-start !important; }
+          .headerTitle { font-size: 2.6rem !important; }
+          .userPill { width: 100% !important; justify-content: space-between !important; flex-wrap: wrap !important; }
+        }
+        @media (max-width: 520px) {
+          .headerTitle { font-size: 2.2rem !important; }
+          .headerSub { font-size: 1rem !important; }
+        }
+
+        /* form: 3 colunas -> 1 coluna */
+        @media (max-width: 820px) {
+          .formGrid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+          .formBtn { width: 100% !important; justify-content: center !important; }
+        }
+
+        /* stats: 4 colunas -> 2 -> 1 */
+        @media (max-width: 900px) {
+          .statsGrid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 520px) {
+          .statsGrid { grid-template-columns: 1fr !important; }
+        }
+
+        /* records: "tabela" -> cards empilhados */
+        .recordGrid {
+          display: grid;
+          grid-template-columns: 140px 120px 120px 100px 1fr auto;
+          gap: 1.5rem;
+          align-items: center;
+        }
+
+        @media (max-width: 820px) {
+          .recordGrid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.9rem !important;
+          }
+
+          .recDate { grid-column: 1 / -1 !important; display:flex !important; justify-content: space-between !important; align-items: baseline !important; }
+          .recDate .dow { opacity: 0.85; }
+
+          .recBed, .recWake { grid-column: span 1 !important; }
+          .recHours { grid-column: 1 / -1 !important; font-size: 1.35rem !important; }
+
+          .recBadge { grid-column: 1 / -1 !important; }
+
+          .recActions { grid-column: 1 / -1 !important; text-align: left !important; }
+          .recActions button { width: 100% !important; }
+        }
       `}</style>
 
       <div style={{ width: '100%' }}>
-        {/* Header with user info */}
-        <div className="animate-in" style={{
+        {/* Header */}
+        <div className="animate-in headerRow" style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          marginBottom: '2rem',
-          animation: 'fadeIn 0.6s ease-out'
+          marginBottom: '2rem'
         }}>
           <div style={{ textAlign: 'left' }}>
             <div className="icon-float" style={{ display: 'inline-block', marginBottom: '1rem' }}>
               <Moon size={56} color="#93c5fd" strokeWidth={1.5} />
             </div>
-            <h1 style={{
+            <h1 className="headerTitle" style={{
               fontFamily: '"Playfair Display", serif',
               fontSize: '3.5rem',
               fontWeight: 900,
@@ -616,12 +654,12 @@ export default function SleepTracker() {
             }}>
               Sleep Tracker
             </h1>
-            <p style={{ color: '#9ca3af', fontSize: '1.1rem', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
+            <p className="headerSub" style={{ color: '#9ca3af', fontSize: '1.1rem', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
               Regista o teu sono e acompanha os teus padrões
             </p>
           </div>
 
-          <div style={{
+          <div className="userPill" style={{
             background: 'rgba(255, 255, 255, 0.03)',
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -631,9 +669,18 @@ export default function SleepTracker() {
             alignItems: 'center',
             gap: '1rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
               <User size={20} color="#93c5fd" />
-              <span style={{ color: '#93c5fd', fontSize: '0.95rem' }}>{user.email}</span>
+              <span style={{
+                color: '#93c5fd',
+                fontSize: '0.95rem',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '320px'
+              }}>
+                {user.email}
+              </span>
             </div>
             <button
               onClick={handleLogout}
@@ -658,9 +705,9 @@ export default function SleepTracker() {
         </div>
 
         {/* Input Form */}
-        <div className="card animate-in" style={{ marginBottom: '2rem', animation: 'fadeIn 0.6s ease-out 0.1s backwards' }}>
+        <div className="card animate-in" style={{ marginBottom: '2rem' }}>
           <form onSubmit={handleSubmit}>
-            <div style={{
+            <div className="formGrid" style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr auto',
               gap: '2rem',
@@ -706,6 +753,7 @@ export default function SleepTracker() {
 
               <button
                 type="submit"
+                className="formBtn"
                 style={{
                   background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
                   border: 'none',
@@ -734,7 +782,6 @@ export default function SleepTracker() {
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setShowStats(!showStats)}
-                className="animate-in"
                 style={{
                   background: 'rgba(147, 197, 253, 0.1)',
                   border: '2px solid rgba(147, 197, 253, 0.3)',
@@ -746,8 +793,7 @@ export default function SleepTracker() {
                   fontFamily: 'Space Mono, monospace',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  animation: 'fadeIn 0.6s ease-out 0.2s backwards'
+                  gap: '0.5rem'
                 }}
               >
                 <TrendingUp size={18} />
@@ -756,7 +802,6 @@ export default function SleepTracker() {
 
               <button
                 onClick={exportData}
-                className="animate-in"
                 style={{
                   background: 'rgba(34, 197, 94, 0.1)',
                   border: '2px solid rgba(34, 197, 94, 0.3)',
@@ -768,8 +813,7 @@ export default function SleepTracker() {
                   fontFamily: 'Space Mono, monospace',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  animation: 'fadeIn 0.6s ease-out 0.25s backwards'
+                  gap: '0.5rem'
                 }}
               >
                 <Download size={18} />
@@ -777,48 +821,30 @@ export default function SleepTracker() {
               </button>
             </div>
 
-            {/* Statistics */}
             {showStats && (
-              <div className="animate-in" style={{ marginBottom: '2rem', animation: 'fadeIn 0.4s ease-out' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+              <div style={{ marginBottom: '2rem' }}>
+                <div className="statsGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
                   <div className="stat-card">
-                    <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>
-                      MÉDIA
-                    </div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#93c5fd' }}>
-                      {stats.avg}h
-                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>MÉDIA</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#93c5fd' }}>{stats.avg}h</div>
                   </div>
 
                   <div className="stat-card">
-                    <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>
-                      MELHOR
-                    </div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#4ade80' }}>
-                      {stats.best}h
-                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>MELHOR</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#4ade80' }}>{stats.best}h</div>
                   </div>
 
                   <div className="stat-card">
-                    <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>
-                      PIOR
-                    </div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#f87171' }}>
-                      {stats.worst}h
-                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>PIOR</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#f87171' }}>{stats.worst}h</div>
                   </div>
 
                   <div className="stat-card">
-                    <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>
-                      REGISTOS
-                    </div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fbbf24' }}>
-                      {stats.total}
-                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>REGISTOS</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fbbf24' }}>{stats.total}</div>
                   </div>
                 </div>
 
-                {/* Chart */}
                 {chartData.length > 1 && (
                   <div className="card">
                     <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.05em' }}>
@@ -828,29 +854,12 @@ export default function SleepTracker() {
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                         <XAxis dataKey="date" stroke="#9ca3af" style={{ fontSize: '0.85rem', fontFamily: 'Space Mono' }} />
-                        <YAxis
-                          stroke="#9ca3af"
-                          style={{ fontSize: '0.85rem', fontFamily: 'Space Mono' }}
-                          label={{ value: 'Horas', angle: -90, position: 'insideLeft', fill: '#9ca3af' }}
-                        />
+                        <YAxis stroke="#9ca3af" style={{ fontSize: '0.85rem', fontFamily: 'Space Mono' }} label={{ value: 'Horas', angle: -90, position: 'insideLeft', fill: '#9ca3af' }} />
                         <Tooltip
-                          contentStyle={{
-                            background: 'rgba(15, 12, 41, 0.95)',
-                            border: '1px solid rgba(147, 197, 253, 0.3)',
-                            borderRadius: '8px',
-                            fontFamily: 'Space Mono',
-                            fontSize: '0.9rem'
-                          }}
+                          contentStyle={{ background: 'rgba(15, 12, 41, 0.95)', border: '1px solid rgba(147, 197, 253, 0.3)', borderRadius: '8px', fontFamily: 'Space Mono', fontSize: '0.9rem' }}
                           labelStyle={{ color: '#93c5fd', marginBottom: '0.5rem' }}
                         />
-                        <Line
-                          type="monotone"
-                          dataKey="hours"
-                          stroke="#60a5fa"
-                          strokeWidth={3}
-                          dot={{ fill: '#93c5fd', r: 5 }}
-                          activeDot={{ r: 7, fill: '#3b82f6' }}
-                        />
+                        <Line type="monotone" dataKey="hours" stroke="#60a5fa" strokeWidth={3} dot={{ fill: '#93c5fd', r: 5 }} activeDot={{ r: 7, fill: '#3b82f6' }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -861,17 +870,8 @@ export default function SleepTracker() {
         )}
 
         {/* Records List */}
-        <div className="card animate-in" style={{ animation: 'fadeIn 0.6s ease-out 0.3s backwards' }}>
-          <h2 style={{
-            fontSize: '1.5rem',
-            marginBottom: '1.5rem',
-            color: '#93c5fd',
-            fontWeight: 700,
-            letterSpacing: '0.05em',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
+        <div className="card">
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Calendar size={24} />
             HISTÓRICO
           </h2>
@@ -880,52 +880,33 @@ export default function SleepTracker() {
             <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
               <Moon size={48} style={{ margin: '0 auto 1rem', opacity: 0.3 }} />
               <p style={{ fontSize: '1.1rem' }}>Ainda não tens registos de sono.</p>
-              <p style={{ fontSize: '0.95rem', marginTop: '0.5rem' }}>
-                Começa por adicionar a tua primeira entrada acima!
-              </p>
+              <p style={{ fontSize: '0.95rem', marginTop: '0.5rem' }}>Começa por adicionar a tua primeira entrada acima!</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {sleepRecords.map((record, index) => (
-                <div
-                  key={record.id}
-                  className="record-item"
-                  style={{ animation: `fadeIn 0.4s ease-out ${index * 0.05}s backwards` }}
-                >
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '140px 120px 120px 100px 1fr auto',
-                    gap: '1.5rem',
-                    alignItems: 'center'
-                  }}>
-                    <div>
-                      <div style={{ fontWeight: 700, color: '#93c5fd' }}>
-                        {formatPT(record.date)}
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.25rem' }}>
-                        {dayShortPT(record.date)}
-                      </div>
+                <div key={record.id} className="record-item" style={{ animation: `fadeIn 0.4s ease-out ${index * 0.05}s backwards` }}>
+                  <div className="recordGrid">
+                    <div className="recDate">
+                      <div style={{ fontWeight: 700, color: '#93c5fd' }}>{formatPT(record.date)}</div>
+                      <div className="dow" style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.25rem' }}>{dayShortPT(record.date)}</div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
+                    <div className="recBed" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
                       <Moon size={16} color="#9ca3af" />
                       {record.bed_time}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
+                    <div className="recWake" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
                       <Sun size={16} color="#fbbf24" />
                       {record.wake_time}
                     </div>
 
-                    <div style={{
-                      fontWeight: 700,
-                      fontSize: '1.2rem',
-                      color: record.hours >= 7 ? '#4ade80' : record.hours >= 6 ? '#fbbf24' : '#f87171'
-                    }}>
+                    <div className="recHours" style={{ fontWeight: 700, fontSize: '1.2rem', color: record.hours >= 7 ? '#4ade80' : record.hours >= 6 ? '#fbbf24' : '#f87171' }}>
                       {record.hours}h
                     </div>
 
-                    <div>
+                    <div className="recBadge">
                       <span style={{
                         padding: '0.4rem 0.8rem',
                         borderRadius: '6px',
@@ -939,7 +920,7 @@ export default function SleepTracker() {
                       </span>
                     </div>
 
-                    <div style={{ textAlign: 'right' }}>
+                    <div className="recActions" style={{ textAlign: 'right' }}>
                       <button
                         onClick={() => deleteRecord(record.id)}
                         style={{
@@ -956,13 +937,15 @@ export default function SleepTracker() {
                         Eliminar
                       </button>
                     </div>
-
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {/* Mobile safe bottom padding */}
+        <div style={{ height: 28 }} />
       </div>
     </div>
   );
