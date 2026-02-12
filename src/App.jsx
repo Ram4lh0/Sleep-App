@@ -569,6 +569,13 @@ export default function SleepTracker() {
            ✅ RESPONSIVE (mobile)
            ========================= */
 
+
+        /* ✅ form base (desktop) */
+          .formGrid { 
+           grid-template-columns: 1fr 1fr auto; 
+             gap: 2rem; 
+          }   
+        .formBtn { width: auto; }
         /* container padding */
         @media (max-width: 900px) {
           .page { padding: 1.25rem 1.25rem !important; }
@@ -707,14 +714,13 @@ export default function SleepTracker() {
         {/* Input Form */}
         <div className="card animate-in" style={{ marginBottom: '2rem' }}>
           <form onSubmit={handleSubmit}>
-            <div className="formGrid" style={{
+           <div className="sleep-form-grid" style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr auto',
-              gap: '2rem',
+              gap: '1rem',
               alignItems: 'end',
               maxWidth: '900px',
               margin: '0 auto'
-            }}>
+              }}>            
               <div>
                 <label style={{
                   display: 'flex',
