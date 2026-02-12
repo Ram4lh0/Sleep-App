@@ -508,12 +508,16 @@ export default function SleepTracker() {
           border: 1.5px solid rgba(255, 255, 255, 0.08);
           border-radius: 14px;
           color: #e0e4f0;
-          padding: 0.9rem 1.1rem;
+          padding: 0.9rem 0.5rem;
           font-family: 'Inter', -apple-system, system-ui, sans-serif;
           font-size: 1rem;
           font-weight: 500;
           transition: all 0.2s ease;
           width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         input[type="time"]:focus { 
           outline: none; 
@@ -521,7 +525,26 @@ export default function SleepTracker() {
           background: rgba(96, 165, 250, 0.06);
           box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.08);
         }
-        input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.6; cursor: pointer; }
+        input[type="time"]::-webkit-calendar-picker-indicator { 
+          filter: invert(1); 
+          opacity: 0.6; 
+          cursor: pointer;
+        }
+        input[type="time"]::-webkit-datetime-edit {
+          padding: 0;
+          overflow: hidden;
+        }
+        input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+          padding: 0;
+          max-width: 100%;
+        }
+        input[type="time"]::-webkit-datetime-edit-text {
+          padding: 0 2px;
+        }
+        input[type="time"]::-webkit-datetime-edit-hour-field,
+        input[type="time"]::-webkit-datetime-edit-minute-field {
+          padding: 0;
+        }
 
         button { 
           cursor: pointer; 
@@ -578,6 +601,18 @@ export default function SleepTracker() {
         @media (max-width: 768px) {
           .sleep-form-grid { grid-template-columns: 1fr !important; gap: 1.25rem !important; }
           .formBtn { width: 100% !important; justify-content: center !important; }
+          
+          input[type="time"] {
+            padding: 0.75rem 0.4rem !important;
+            font-size: 0.95rem !important;
+          }
+        }
+
+        @media (max-width: 520px) {
+          input[type="time"] {
+            padding: 0.7rem 0.35rem !important;
+            font-size: 0.9rem !important;
+          }
         }
 
         @media (max-width: 900px) { .statsGrid { grid-template-columns: repeat(2, 1fr) !important; } }
@@ -692,7 +727,7 @@ export default function SleepTracker() {
                   fontWeight: 600
                 }}>
                   <Moon size={16} />
-                  Deitar
+                  Dormir
                 </label>
                 <input type="time" value={bedTime} onChange={(e) => setBedTime(e.target.value)} required />
               </div>
