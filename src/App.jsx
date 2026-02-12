@@ -309,12 +309,13 @@ export default function SleepTracker() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
-        color: '#8b93b0'
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
+        color: '#8b93b0',
+        padding: '1rem'
       }}>
         <div style={{ textAlign: 'center' }}>
-          <Moon size={40} style={{ margin: '0 auto 1rem', opacity: 0.6 }} />
-          <p style={{ fontSize: '1rem', fontWeight: 500 }}>A carregar...</p>
+          <Moon size={36} style={{ margin: '0 auto 1rem', opacity: 0.6 }} />
+          <p style={{ fontSize: '0.95rem', fontWeight: 500 }}>A carregar...</p>
         </div>
       </div>
     );
@@ -326,26 +327,31 @@ export default function SleepTracker() {
       <div style={{
         minHeight: '100vh',
         background: 'linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%)',
-        fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
         color: '#e0e4f0',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.5rem'
+        padding: '1.25rem'
       }}>
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-          * { box-sizing: border-box; }
-          body { -webkit-font-smoothing: antialiased; }
+          * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+          }
+          body { 
+            -webkit-font-smoothing: antialiased;
+            -webkit-text-size-adjust: 100%;
+          }
 
           input {
             background: rgba(255, 255, 255, 0.04);
             border: 1.5px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             color: #e0e4f0;
-            padding: 0.95rem 1.1rem;
-            font-family: 'Inter', -apple-system, system-ui, sans-serif;
-            font-size: 0.95rem;
+            padding: 0.9rem 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            font-size: 16px;
             font-weight: 500;
             transition: all 0.2s ease;
             width: 100%;
@@ -358,65 +364,70 @@ export default function SleepTracker() {
           }
           input::placeholder { color: rgba(139, 147, 176, 0.5); }
 
-          button { cursor: pointer; transition: all 0.2s ease; border: none; font-weight: 600; }
-          button:hover { transform: translateY(-1px); opacity: 0.9; }
-          button:active { transform: translateY(0); }
+          button { 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            border: none; 
+            font-weight: 600;
+            -webkit-tap-highlight-color: transparent;
+          }
+          button:active { transform: scale(0.98); }
           button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         `}</style>
 
         <div style={{
           background: 'rgba(255, 255, 255, 0.02)',
           border: '1px solid rgba(255, 255, 255, 0.06)',
-          borderRadius: 24,
-          padding: '2.5rem',
-          maxWidth: 420,
+          borderRadius: 20,
+          padding: '2rem 1.5rem',
+          maxWidth: 400,
           width: '100%',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
         }}>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <Moon size={44} color="#60a5fa" strokeWidth={1.8} style={{ margin: '0 auto 1.25rem', display: 'block' }} />
+          <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+            <Moon size={40} color="#60a5fa" strokeWidth={1.8} style={{ margin: '0 auto 1rem', display: 'block' }} />
             <h1 style={{
-              fontSize: '1.75rem',
+              fontSize: '1.65rem',
               fontWeight: 700,
-              margin: '0 0 0.5rem',
+              margin: '0 0 0.4rem',
               color: '#e0e4f0',
               letterSpacing: '-0.02em'
             }}>
               Sleep Tracker
             </h1>
-            <p style={{ color: '#8b93b0', fontSize: '0.9rem', fontWeight: 500 }}>
+            <p style={{ color: '#8b93b0', fontSize: '0.875rem', fontWeight: 500 }}>
               {isSignup ? 'Cria a tua conta' : 'Bem-vindo de volta'}
             </p>
           </div>
 
           <form onSubmit={isSignup ? handleSignup : handleLogin}>
-            <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{ marginBottom: '1.15rem' }}>
               <label style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.6rem',
+                gap: '0.45rem',
+                marginBottom: '0.55rem',
                 color: '#8b93b0',
-                fontSize: '0.85rem',
+                fontSize: '0.8rem',
                 fontWeight: 600
               }}>
-                <Mail size={15} />
+                <Mail size={14} />
                 Email
               </label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@exemplo.com" required />
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ marginBottom: '1.4rem' }}>
               <label style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.6rem',
+                gap: '0.45rem',
+                marginBottom: '0.55rem',
                 color: '#8b93b0',
-                fontSize: '0.85rem',
+                fontSize: '0.8rem',
                 fontWeight: 600
               }}>
-                <Lock size={15} />
+                <Lock size={14} />
                 Password
               </label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
@@ -427,10 +438,10 @@ export default function SleepTracker() {
                 background: 'rgba(239, 68, 68, 0.08)',
                 border: '1px solid rgba(239, 68, 68, 0.2)',
                 borderRadius: 10,
-                padding: '0.85rem',
-                marginBottom: '1.5rem',
+                padding: '0.8rem',
+                marginBottom: '1.4rem',
                 color: '#f87171',
-                fontSize: '0.875rem',
+                fontSize: '0.85rem',
                 fontWeight: 500
               }}>
                 {authError}
@@ -444,12 +455,12 @@ export default function SleepTracker() {
                 background: '#60a5fa',
                 borderRadius: 12,
                 color: 'white',
-                padding: '1rem',
+                padding: '0.95rem',
                 fontSize: '0.95rem',
                 fontWeight: 600,
-                fontFamily: 'Inter, sans-serif',
+                fontFamily: '-apple-system, sans-serif',
                 width: '100%',
-                marginBottom: '0.75rem'
+                marginBottom: '0.7rem'
               }}
             >
               {authLoading ? 'A processar...' : (isSignup ? 'Criar Conta' : 'Entrar')}
@@ -463,8 +474,8 @@ export default function SleepTracker() {
                 border: '1.5px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: 12,
                 color: '#8b93b0',
-                padding: '0.85rem',
-                fontSize: '0.9rem',
+                padding: '0.8rem',
+                fontSize: '0.875rem',
                 fontWeight: 600,
                 width: '100%'
               }}
@@ -477,45 +488,50 @@ export default function SleepTracker() {
     );
   }
 
-  // Main app (when logged in)
+  // Main app (when logged in) - MOBILE FIRST
   return (
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%)',
-      fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
       color: '#e0e4f0',
-      padding: '2.5rem 2rem'
+      padding: '1.25rem 1rem',
+      paddingBottom: '2rem'
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { -webkit-font-smoothing: antialiased; }
+        * { 
+          box-sizing: border-box; 
+          margin: 0; 
+          padding: 0;
+          -webkit-tap-highlight-color: transparent;
+        }
+        body { 
+          -webkit-font-smoothing: antialiased;
+          -webkit-text-size-adjust: 100%;
+        }
 
-        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-        .animate-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .animate-in { animation: fadeIn 0.4s ease-out; }
 
         .card {
           background: rgba(255, 255, 255, 0.02);
           border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 20px;
-          padding: 2rem;
+          border-radius: 18px;
+          padding: 1.35rem;
           transition: all 0.2s ease;
         }
-        .card:hover { background: rgba(255,255,255,0.03); }
 
         input[type="time"] {
           background: rgba(255, 255, 255, 0.04);
           border: 1.5px solid rgba(255, 255, 255, 0.08);
-          border-radius: 14px;
+          border-radius: 12px;
           color: #e0e4f0;
-          padding: 0.9rem 0.75rem;
-          font-family: 'Inter', -apple-system, system-ui, sans-serif;
-          font-size: 1rem;
+          padding: 0.85rem 1rem;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+          font-size: 16px;
           font-weight: 500;
           transition: all 0.2s ease;
           width: 100%;
-          max-width: 100%;
-          box-sizing: border-box;
           display: block;
         }
         input[type="time"]:focus { 
@@ -526,117 +542,50 @@ export default function SleepTracker() {
         }
         input[type="time"]::-webkit-calendar-picker-indicator { 
           filter: invert(1); 
-          opacity: 0.6; 
-          cursor: pointer;
+          opacity: 0.6;
         }
 
         button { 
           cursor: pointer; 
           transition: all 0.2s ease; 
-          font-family: 'Inter', -apple-system, system-ui, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
           border: none;
           font-weight: 600;
         }
-        button:hover { transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
+        button:active { transform: scale(0.98); }
 
         .record-item {
           background: rgba(255, 255, 255, 0.02);
           border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 16px;
-          padding: 1.35rem;
+          border-radius: 14px;
+          padding: 1.15rem;
           transition: all 0.2s ease;
-        }
-        .record-item:hover { 
-          background: rgba(255,255,255,0.03); 
-          border-color: rgba(96, 165, 250, 0.12);
         }
 
         .stat-card {
           background: rgba(255, 255, 255, 0.02);
           border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 18px;
-          padding: 1.75rem;
+          border-radius: 16px;
+          padding: 1.5rem;
           text-align: center;
-          transition: all 0.2s ease;
-        }
-        .stat-card:hover { 
-          background: rgba(96, 165, 250, 0.04);
-          border-color: rgba(96, 165, 250, 0.15);
-        }
-
-        .container { max-width: 1400px; margin: 0 auto; width: 100%; }
-
-        @media (max-width: 1024px) { .page { padding: 2rem 1.5rem !important; } }
-        @media (max-width: 768px) { 
-          .page { padding: 1.5rem 1.25rem !important; } 
-          .card { padding: 1.5rem !important; } 
-        }
-        @media (max-width: 520px) { 
-          .page { padding: 1.25rem 1rem !important; } 
-          .card { padding: 1.25rem !important; } 
-        }
-
-        @media (max-width: 900px) {
-          .headerRow { flex-direction: column !important; gap: 1.5rem !important; align-items: flex-start !important; }
-          .userPill { width: 100% !important; justify-content: space-between !important; }
-        }
-
-        @media (max-width: 768px) {
-          .sleep-form-grid { grid-template-columns: 1fr !important; gap: 1.25rem !important; }
-          .formBtn { width: 100% !important; justify-content: center !important; }
-          
-          input[type="time"] {
-            padding: 0.75rem !important;
-            font-size: 0.95rem !important;
-            width: 100% !important;
-            margin: 0 !important;
-          }
-        }
-
-        @media (max-width: 520px) {
-          input[type="time"] {
-            padding: 0.7rem !important;
-            font-size: 0.9rem !important;
-          }
-        }
-
-        @media (max-width: 900px) { .statsGrid { grid-template-columns: repeat(2, 1fr) !important; } }
-        @media (max-width: 520px) { .statsGrid { grid-template-columns: 1fr !important; } }
-
-        .recordGrid {
-          display: grid;
-          grid-template-columns: 130px 110px 110px 90px 1fr auto;
-          gap: 1.25rem;
-          align-items: center;
-        }
-
-        @media (max-width: 900px) {
-          .recordGrid { grid-template-columns: 1fr auto !important; gap: 1rem !important; }
-          .recDate { grid-column: 1 / -1 !important; display: flex !important; justify-content: space-between !important; padding-bottom: 0.75rem !important; margin-bottom: 0.75rem !important; border-bottom: 1px solid rgba(255,255,255,0.04) !important; }
-          .recBed, .recWake { grid-column: span 1 !important; font-size: 0.9rem !important; }
-          .recHours { grid-column: 1 / -1 !important; font-size: 1.5rem !important; margin: 0.5rem 0 !important; }
-          .recBadge { grid-column: 1 / -1 !important; margin: 0.5rem 0 !important; }
-          .recActions { grid-column: 1 / -1 !important; text-align: left !important; margin-top: 0.75rem !important; padding-top: 0.75rem !important; border-top: 1px solid rgba(255,255,255,0.04) !important; }
-          .recActions button { width: 100% !important; }
         }
 
         html { scroll-behavior: smooth; }
+
+        /* Desktop adjustments */
+        @media (min-width: 768px) {
+          .container { max-width: 600px; margin: 0 auto; }
+        }
       `}</style>
 
       <div className="container">
         {/* Header */}
-        <div className="animate-in headerRow" style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '2.5rem'
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <Moon size={32} color="#60a5fa" strokeWidth={2} />
+        <div className="animate-in" style={{ marginBottom: '1.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <Moon size={28} color="#60a5fa" strokeWidth={2} />
               <h1 style={{
-                fontSize: '2rem',
+                fontSize: '1.6rem',
                 fontWeight: 700,
                 color: '#e0e4f0',
                 letterSpacing: '-0.02em'
@@ -644,34 +593,7 @@ export default function SleepTracker() {
                 Sleep Tracker
               </h1>
             </div>
-            <p style={{ color: '#8b93b0', fontSize: '0.95rem', fontWeight: 500, marginLeft: '2.75rem' }}>
-              Acompanha o teu sono
-            </p>
-          </div>
-
-          <div className="userPill" style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: 14,
-            padding: '0.75rem 1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0 }}>
-              <User size={18} color="#8b93b0" />
-              <span style={{
-                color: '#8b93b0',
-                fontSize: '0.9rem',
-                fontWeight: 500,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '280px'
-              }}>
-                {user.email}
-              </span>
-            </div>
+            
             <button
               onClick={handleLogout}
               style={{
@@ -679,165 +601,181 @@ export default function SleepTracker() {
                 border: '1px solid rgba(239, 68, 68, 0.15)',
                 borderRadius: 10,
                 color: '#f87171',
-                padding: '0.5rem 0.9rem',
-                fontSize: '0.85rem',
+                padding: '0.5rem 0.85rem',
+                fontSize: '0.8rem',
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.4rem'
+                gap: '0.35rem'
               }}
             >
-              <LogOut size={15} />
+              <LogOut size={14} />
               Sair
             </button>
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            color: '#8b93b0',
+            fontSize: '0.85rem',
+            fontWeight: 500
+          }}>
+            <User size={15} />
+            <span style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {user.email}
+            </span>
           </div>
         </div>
 
         {/* Input Form */}
-        <div className="card animate-in" style={{ marginBottom: '2rem' }}>
+        <div className="card animate-in" style={{ marginBottom: '1.5rem' }}>
           <form onSubmit={handleSubmit}>
-            <div className="sleep-form-grid" style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr auto',
-              gap: '1.5rem',
-              alignItems: 'end'
-            }}>            
-              <div style={{ width: '100%' }}>
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  marginBottom: '0.65rem',
-                  color: '#8b93b0',
-                  fontSize: '0.85rem',
-                  fontWeight: 600
-                }}>
-                  <Moon size={16} />
-                  Deitar
-                </label>
-                <input type="time" value={bedTime} onChange={(e) => setBedTime(e.target.value)} required />
-              </div>
-
-              <div style={{ width: '100%' }}>
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  marginBottom: '0.65rem',
-                  color: '#8b93b0',
-                  fontSize: '0.85rem',
-                  fontWeight: 600
-                }}>
-                  <Sun size={16} />
-                  Acordar
-                </label>
-                <input type="time" value={wakeTime} onChange={(e) => setWakeTime(e.target.value)} required />
-              </div>
-
-              <button
-                type="submit"
-                className="formBtn"
-                style={{
-                  background: '#60a5fa',
-                  borderRadius: 14,
-                  color: 'white',
-                  padding: '0.9rem 1.75rem',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <Plus size={19} />
-                Adicionar
-              </button>
+            <div style={{ marginBottom: '1.15rem' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                marginBottom: '0.55rem',
+                color: '#8b93b0',
+                fontSize: '0.8rem',
+                fontWeight: 600
+              }}>
+                <Moon size={15} />
+                Deitar
+              </label>
+              <input type="time" value={bedTime} onChange={(e) => setBedTime(e.target.value)} required />
             </div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                marginBottom: '0.55rem',
+                color: '#8b93b0',
+                fontSize: '0.8rem',
+                fontWeight: 600
+              }}>
+                <Sun size={15} />
+                Acordar
+              </label>
+              <input type="time" value={wakeTime} onChange={(e) => setWakeTime(e.target.value)} required />
+            </div>
+
+            <button
+              type="submit"
+              style={{
+                background: '#60a5fa',
+                borderRadius: 12,
+                color: 'white',
+                padding: '0.95rem',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                width: '100%'
+              }}
+            >
+              <Plus size={18} />
+              Adicionar
+            </button>
           </form>
         </div>
 
         {/* Stats & Actions */}
         {sleepRecords.length > 0 && (
           <>
-            <div style={{ display: 'flex', gap: '0.85rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setShowStats(!showStats)}
                 style={{
+                  flex: 1,
                   background: 'rgba(96, 165, 250, 0.08)',
                   border: '1px solid rgba(96, 165, 250, 0.15)',
                   borderRadius: 12,
                   color: '#60a5fa',
-                  padding: '0.75rem 1.35rem',
-                  fontSize: '0.9rem',
+                  padding: '0.75rem 1.15rem',
+                  fontSize: '0.85rem',
                   fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  justifyContent: 'center',
+                  gap: '0.45rem'
                 }}
               >
-                <TrendingUp size={17} />
+                <TrendingUp size={16} />
                 {showStats ? 'Ocultar' : 'Ver'} Estatísticas
               </button>
 
               <button
                 onClick={exportData}
                 style={{
+                  flex: 1,
                   background: 'rgba(34, 197, 94, 0.08)',
                   border: '1px solid rgba(34, 197, 94, 0.15)',
                   borderRadius: 12,
                   color: '#4ade80',
-                  padding: '0.75rem 1.35rem',
-                  fontSize: '0.9rem',
+                  padding: '0.75rem 1.15rem',
+                  fontSize: '0.85rem',
                   fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  justifyContent: 'center',
+                  gap: '0.45rem'
                 }}
               >
-                <Download size={17} />
-                Exportar CSV
+                <Download size={16} />
+                Exportar
               </button>
             </div>
 
             {showStats && (
-              <div style={{ marginBottom: '2rem' }}>
-                <div className="statsGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem', marginBottom: '2rem' }}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.85rem', marginBottom: '1.5rem' }}>
                   <div className="stat-card">
-                    <div style={{ fontSize: '0.8rem', color: '#8b93b0', marginBottom: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Média</div>
-                    <div style={{ fontSize: '2.25rem', fontWeight: 700, color: '#e0e4f0' }}>{stats.avg}h</div>
+                    <div style={{ fontSize: '0.75rem', color: '#8b93b0', marginBottom: '0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Média</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, color: '#e0e4f0' }}>{stats.avg}h</div>
                   </div>
 
                   <div className="stat-card">
-                    <div style={{ fontSize: '0.8rem', color: '#8b93b0', marginBottom: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Melhor</div>
-                    <div style={{ fontSize: '2.25rem', fontWeight: 700, color: '#4ade80' }}>{stats.best}h</div>
+                    <div style={{ fontSize: '0.75rem', color: '#8b93b0', marginBottom: '0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Melhor</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, color: '#4ade80' }}>{stats.best}h</div>
                   </div>
 
                   <div className="stat-card">
-                    <div style={{ fontSize: '0.8rem', color: '#8b93b0', marginBottom: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pior</div>
-                    <div style={{ fontSize: '2.25rem', fontWeight: 700, color: '#f87171' }}>{stats.worst}h</div>
+                    <div style={{ fontSize: '0.75rem', color: '#8b93b0', marginBottom: '0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pior</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, color: '#f87171' }}>{stats.worst}h</div>
                   </div>
 
                   <div className="stat-card">
-                    <div style={{ fontSize: '0.8rem', color: '#8b93b0', marginBottom: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registos</div>
-                    <div style={{ fontSize: '2.25rem', fontWeight: 700, color: '#fbbf24' }}>{stats.total}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#8b93b0', marginBottom: '0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registos</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, color: '#fbbf24' }}>{stats.total}</div>
                   </div>
                 </div>
 
                 {chartData.length > 1 && (
                   <div className="card">
-                    <h3 style={{ fontSize: '1.05rem', marginBottom: '1.5rem', color: '#8b93b0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <h3 style={{ fontSize: '0.95rem', marginBottom: '1.25rem', color: '#8b93b0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Últimos 14 dias
                     </h3>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={240}>
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                        <XAxis dataKey="date" stroke="#8b93b0" style={{ fontSize: '0.8rem', fontFamily: 'Inter' }} />
-                        <YAxis stroke="#8b93b0" style={{ fontSize: '0.8rem', fontFamily: 'Inter' }} />
+                        <XAxis dataKey="date" stroke="#8b93b0" style={{ fontSize: '0.75rem' }} />
+                        <YAxis stroke="#8b93b0" style={{ fontSize: '0.75rem' }} />
                         <Tooltip
-                          contentStyle={{ background: 'rgba(10, 14, 39, 0.98)', border: '1px solid rgba(96, 165, 250, 0.2)', borderRadius: '12px', fontFamily: 'Inter', fontSize: '0.875rem' }}
-                          labelStyle={{ color: '#60a5fa', marginBottom: '0.4rem', fontWeight: 600 }}
+                          contentStyle={{ background: 'rgba(10, 14, 39, 0.98)', border: '1px solid rgba(96, 165, 250, 0.2)', borderRadius: '10px', fontSize: '0.8rem' }}
+                          labelStyle={{ color: '#60a5fa', marginBottom: '0.3rem', fontWeight: 600 }}
                         />
-                        <Line type="monotone" dataKey="hours" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: '#60a5fa', r: 4 }} activeDot={{ r: 6, fill: '#3b82f6' }} />
+                        <Line type="monotone" dataKey="hours" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: '#60a5fa', r: 4 }} activeDot={{ r: 5 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -849,79 +787,74 @@ export default function SleepTracker() {
 
         {/* Records List */}
         <div className="card">
-          <h2 style={{ fontSize: '1.05rem', marginBottom: '1.5rem', color: '#8b93b0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Calendar size={20} />
+          <h2 style={{ fontSize: '0.95rem', marginBottom: '1.25rem', color: '#8b93b0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Calendar size={18} />
             Histórico
           </h2>
 
           {sleepRecords.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#8b93b0' }}>
-              <Moon size={42} style={{ margin: '0 auto 1rem', opacity: 0.3 }} />
-              <p style={{ fontSize: '1rem', fontWeight: 500 }}>Ainda não tens registos.</p>
-              <p style={{ fontSize: '0.9rem', marginTop: '0.4rem', opacity: 0.7 }}>Adiciona a tua primeira entrada acima!</p>
+            <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#8b93b0' }}>
+              <Moon size={38} style={{ margin: '0 auto 0.85rem', opacity: 0.3 }} />
+              <p style={{ fontSize: '0.95rem', fontWeight: 500 }}>Ainda não tens registos.</p>
+              <p style={{ fontSize: '0.85rem', marginTop: '0.35rem', opacity: 0.7 }}>Adiciona a tua primeira entrada acima!</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {sleepRecords.map((record, index) => (
-                <div key={record.id} className="record-item" style={{ animation: `fadeIn 0.4s ease-out ${index * 0.04}s backwards` }}>
-                  <div className="recordGrid">
-                    <div className="recDate">
-                      <div style={{ fontWeight: 600, color: '#e0e4f0', fontSize: '0.95rem' }}>{formatPT(record.date)}</div>
-                      <div className="dow" style={{ fontSize: '0.82rem', color: '#8b93b0', fontWeight: 500 }}>{dayShortPT(record.date)}</div>
-                    </div>
+                <div key={record.id} className="record-item" style={{ animation: `fadeIn 0.3s ease-out ${index * 0.03}s backwards` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div style={{ fontWeight: 600, color: '#e0e4f0', fontSize: '0.9rem' }}>{formatPT(record.date)}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#8b93b0', fontWeight: 500 }}>{dayShortPT(record.date)}</div>
+                  </div>
 
-                    <div className="recBed" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#c7cfe0' }}>
-                      <Moon size={15} color="#8b93b0" />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.65rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.875rem', color: '#c7cfe0' }}>
+                      <Moon size={14} color="#8b93b0" />
                       {record.bed_time}
                     </div>
-
-                    <div className="recWake" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#c7cfe0' }}>
-                      <Sun size={15} color="#fbbf24" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.875rem', color: '#c7cfe0' }}>
+                      <Sun size={14} color="#fbbf24" />
                       {record.wake_time}
                     </div>
+                  </div>
 
-                    <div className="recHours" style={{ fontWeight: 700, fontSize: '1.15rem', color: record.hours >= 7 ? '#4ade80' : record.hours >= 6 ? '#fbbf24' : '#f87171' }}>
-                      {record.hours}h
-                    </div>
+                  <div style={{ fontWeight: 700, fontSize: '1.4rem', color: record.hours >= 7 ? '#4ade80' : record.hours >= 6 ? '#fbbf24' : '#f87171', marginBottom: '0.65rem' }}>
+                    {record.hours}h
+                  </div>
 
-                    <div className="recBadge">
-                      <span style={{
-                        padding: '0.4rem 0.75rem',
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                    <span style={{
+                      padding: '0.4rem 0.7rem',
+                      borderRadius: 8,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      background: record.hours >= 7 ? 'rgba(74, 222, 128, 0.1)' : record.hours >= 6 ? 'rgba(251, 191, 36, 0.1)' : 'rgba(248, 113, 113, 0.1)',
+                      color: record.hours >= 7 ? '#4ade80' : record.hours >= 6 ? '#fbbf24' : '#f87171',
+                      border: `1px solid ${record.hours >= 7 ? 'rgba(74, 222, 128, 0.2)' : record.hours >= 6 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(248, 113, 113, 0.2)'}`
+                    }}>
+                      {record.hours >= 7 ? '✓ Boa' : record.hours >= 6 ? '~ Média' : '✗ Fraca'}
+                    </span>
+
+                    <button
+                      onClick={() => deleteRecord(record.id)}
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px solid rgba(239, 68, 68, 0.15)',
                         borderRadius: 8,
+                        color: '#f87171',
+                        padding: '0.45rem 0.85rem',
                         fontSize: '0.8rem',
-                        fontWeight: 600,
-                        background: record.hours >= 7 ? 'rgba(74, 222, 128, 0.1)' : record.hours >= 6 ? 'rgba(251, 191, 36, 0.1)' : 'rgba(248, 113, 113, 0.1)',
-                        color: record.hours >= 7 ? '#4ade80' : record.hours >= 6 ? '#fbbf24' : '#f87171',
-                        border: `1px solid ${record.hours >= 7 ? 'rgba(74, 222, 128, 0.2)' : record.hours >= 6 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(248, 113, 113, 0.2)'}`
-                      }}>
-                        {record.hours >= 7 ? '✓ Boa' : record.hours >= 6 ? '~ Média' : '✗ Fraca'}
-                      </span>
-                    </div>
-
-                    <div className="recActions" style={{ textAlign: 'right' }}>
-                      <button
-                        onClick={() => deleteRecord(record.id)}
-                        style={{
-                          background: 'rgba(239, 68, 68, 0.08)',
-                          border: '1px solid rgba(239, 68, 68, 0.15)',
-                          borderRadius: 10,
-                          color: '#f87171',
-                          padding: '0.5rem 1rem',
-                          fontSize: '0.85rem',
-                          fontWeight: 600
-                        }}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
+                        fontWeight: 600
+                      }}
+                    >
+                      Eliminar
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-
-        <div style={{ height: '2rem' }} />
       </div>
     </div>
   );
